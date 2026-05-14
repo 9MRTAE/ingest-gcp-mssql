@@ -10,7 +10,7 @@ from google.cloud import secretmanager
 from google.oauth2 import service_account
 
 APP_ENV = os.getenv('CI_COMMIT_BRANCH', 'develop')
-IMAGE_TAG = os.getenv('IMAGE_TAG', 'ingest-gcp-mssql-popcorn:local')
+IMAGE_TAG = os.getenv('IMAGE_TAG', 'ingest-gcp-mssql:local')
 PREFECT_PROJECT_NAME = APP_ENV
 
 if APP_ENV == 'main':

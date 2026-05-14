@@ -1,6 +1,6 @@
 """
 Flow  : ingest_gcp_mssql_ecom_livingmart
-Repo  : ingest_gcp_mssql_popcorn
+Repo  : ingest_gcp_mssql
 DB    : GCP · MSSQL · your-db-hostname · ECOM
 
 GCS output path:

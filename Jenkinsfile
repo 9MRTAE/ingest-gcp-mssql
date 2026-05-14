@@ -3,9 +3,9 @@ pipeline {
 
     environment {
         REGISTORY_URL          = "https://asia-southeast1-docker.pkg.dev"
-        IMAGE_NAME             = "<YOUR_REGISTRY>/<YOUR_PROJECT>/prefect_v3/ingest/ingest_gcp_mssql_popcorn   // [SCRUBBED] replace with your Docker registry path"
+        IMAGE_NAME             = "<YOUR_REGISTRY>/<YOUR_PROJECT>/prefect_v3/ingest/ingest_gcp_mssql   // [SCRUBBED] replace with your Docker registry path"
         DOCKER_CREDENTIALS_ID  = 'artifacts-registory-file'
-        NAME_REPO              = 'ingest_gcp_mssql_popcorn'
+        NAME_REPO              = 'ingest_gcp_mssql'
         TAG                    = setGitBranchName()
         BRANCH_NAME            = getGitBranchName()
 

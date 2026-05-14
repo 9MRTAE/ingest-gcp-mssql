@@ -1,6 +1,6 @@
 """
 Flow  : ingest_gcp_mssql_erp_payment
-Repo  : ingest_gcp_mssql_popcorn
+Repo  : ingest_gcp_mssql
 DB    : GCP · MSSQL · your-db-hostname · ERP (iProp)
 
 GCS output path:

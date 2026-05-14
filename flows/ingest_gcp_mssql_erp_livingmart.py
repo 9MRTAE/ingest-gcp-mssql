@@ -1,6 +1,6 @@
 """
 Flow  : ingest_gcp_mssql_erp_livingmart
-Repo  : ingest_gcp_mssql_popcorn
+Repo  : ingest_gcp_mssql
 DB    : GCP · MSSQL · your-db-hostname · ERP (iProp)
 
 NOTE  : Source DB = ERP แต่ load ไปที่ GCS path livingmart/

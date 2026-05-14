@@ -14,7 +14,7 @@ Domain → GCS_APPLICATION mapping (single source of truth)
     asset, bookbank, budget, contract_legacy, erp,
     favoritemenu, gl, invoice, mobile, notice,
     party, payment, paymentrequest, product, project,
-    receipt, report, role, transferslip, unit
+    receipt, report, role, standardform, stockkeycard, transferslip, unit
 
   GCS = livingmart       → livingmart  (source DB = ERP)
   GCS = smartaudit       → smartaudit
