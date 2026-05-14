@@ -1,0 +1,712 @@
+name: ingest_gcp_mssql_popcorn
+
+prefect-version: "3"
+
+# CHANGE POINT: removed build/push steps (prefect_docker build_docker_image).
+# Image is built and pushed by CI/CD pipeline (Jenkinsfile) — not by prefect deploy.
+# This matches the auth template pattern: deploy only registers, never builds.
+build: []
+push: []
+
+pull:
+  - prefect.deployments.steps.set_working_directory:
+      directory: /app
+
+# ── Deployments ───────────────────────────────────────────────────────────────
+# Convention:
+#   name      = ingest_{platform}_{db_type}_{db_name}_{application}
+#   1 deployment = 1 GCS_APPLICATION (= 1 BU slice of the ECOM DB)
+#
+# To add a new BU / application:
+#   1. Create flows/ingest_gcp_mssql_{db_name}_{application}.py
+#   2. Add a deployment block below
+#   3. Add the flow import to deploy.py and run_local.py
+#
+# Repair single table via CLI:
+#   prefect deployment run \
+#     'ingest_gcp_mssql_ECOM_livingmart/ingest_gcp_mssql_ECOM_livingmart' \
+#     -p TABLE_NAME=tmAttribute -p JOB_BACKDATE_DEPEN=-3
+
+deployments:
+
+  # ── ECOM · livingmart ───────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_ecom
+    entrypoint: flows/ingest_gcp_mssql_ecom.py:ingest_gcp_mssql_ecom
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+
+  # ── ERP · smartaudit ───────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_smartaudit
+    entrypoint: flows/ingest_gcp_mssql_erp_smartaudit.py:ingest_gcp_mssql_erp_smartaudit
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+
+  # ── ERP · timeattendace ───────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_timeattendance
+    entrypoint: flows/ingest_gcp_mssql_erp_timeattendance.py:ingest_gcp_mssql_erp_timeattendance
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+
+  # ── ERP · visitor ───────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_visitor
+    entrypoint: flows/ingest_gcp_mssql_erp_visitor.py:ingest_gcp_mssql_erp_visitor
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+
+  # ── ERP · stockkeycard ───────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_stockkeycard
+    entrypoint: flows/ingest_gcp_mssql_erp_stockkeycard.py:ingest_gcp_mssql_erp_stockkeycard
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+
+  # ── ERP · ERP ───────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp
+    entrypoint: flows/ingest_gcp_mssql_erp.py:ingest_gcp_mssql_erp
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+    # CHANGE POINT: `active` evaluated at registration time.
+    # For non-prod branches, disable via Prefect UI or pass active: false here.
+
+  # ── ERP · livingmart (ERP tables → GCS livingmart/) ───────────────────────
+  - name: ingest_gcp_mssql_erp_livingmart
+    entrypoint: flows/ingest_gcp_mssql_erp_livingmart.py:ingest_gcp_mssql_erp_livingmart
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+
+  # ── ERP · accounting_doc ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_accounting_doc
+    entrypoint: flows/ingest_gcp_mssql_erp_accounting_doc.py:ingest_gcp_mssql_erp_accounting_doc
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · asset ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_asset
+    entrypoint: flows/ingest_gcp_mssql_erp_asset.py:ingest_gcp_mssql_erp_asset
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · bookbank ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_bookbank
+    entrypoint: flows/ingest_gcp_mssql_erp_bookbank.py:ingest_gcp_mssql_erp_bookbank
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · budget ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_budget
+    entrypoint: flows/ingest_gcp_mssql_erp_budget.py:ingest_gcp_mssql_erp_budget
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · contract_legacy ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_contract_legacy
+    entrypoint: flows/ingest_gcp_mssql_erp_contract_legacy.py:ingest_gcp_mssql_erp_contract_legacy
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · favoritemenu ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_favoritemenu
+    entrypoint: flows/ingest_gcp_mssql_erp_favoritemenu.py:ingest_gcp_mssql_erp_favoritemenu
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · gl ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_gl
+    entrypoint: flows/ingest_gcp_mssql_erp_gl.py:ingest_gcp_mssql_erp_gl
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · invoice ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_invoice
+    entrypoint: flows/ingest_gcp_mssql_erp_invoice.py:ingest_gcp_mssql_erp_invoice
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · mobile ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_mobile
+    entrypoint: flows/ingest_gcp_mssql_erp_mobile.py:ingest_gcp_mssql_erp_mobile
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · notice ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_notice
+    entrypoint: flows/ingest_gcp_mssql_erp_notice.py:ingest_gcp_mssql_erp_notice
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · party ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_party
+    entrypoint: flows/ingest_gcp_mssql_erp_party.py:ingest_gcp_mssql_erp_party
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · payment ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_payment
+    entrypoint: flows/ingest_gcp_mssql_erp_payment.py:ingest_gcp_mssql_erp_payment
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · paymentrequest ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_paymentrequest
+    entrypoint: flows/ingest_gcp_mssql_erp_paymentrequest.py:ingest_gcp_mssql_erp_paymentrequest
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · product ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_product
+    entrypoint: flows/ingest_gcp_mssql_erp_product.py:ingest_gcp_mssql_erp_product
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · project ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_project
+    entrypoint: flows/ingest_gcp_mssql_erp_project.py:ingest_gcp_mssql_erp_project
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · receipt ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_receipt
+    entrypoint: flows/ingest_gcp_mssql_erp_receipt.py:ingest_gcp_mssql_erp_receipt
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · report ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_report
+    entrypoint: flows/ingest_gcp_mssql_erp_report.py:ingest_gcp_mssql_erp_report
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · role ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_role
+    entrypoint: flows/ingest_gcp_mssql_erp_role.py:ingest_gcp_mssql_erp_role
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · standardform ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_standardform
+    entrypoint: flows/ingest_gcp_mssql_erp_standardform.py:ingest_gcp_mssql_erp_standardform
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · transferslip ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_transferslip
+    entrypoint: flows/ingest_gcp_mssql_erp_transferslip.py:ingest_gcp_mssql_erp_transferslip
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true
+  # ── ERP · unit ─────────────────────────────────────────────────────────
+  - name: ingest_gcp_mssql_erp_unit
+    entrypoint: flows/ingest_gcp_mssql_erp_unit.py:ingest_gcp_mssql_erp_unit
+    work_pool:
+      name: "{{ $PREFECT_WORK_POOL }}"
+      work_queue_name: "{{ $PREFECT_WORK_QUEUE }}"
+      job_variables:
+        image: "{{ $IMAGE_TAG }}"
+        env:
+          CI_COMMIT_BRANCH: "{{ $CI_COMMIT_BRANCH }}"
+          IMAGE_TAG: "{{ $IMAGE_TAG }}"
+          SECRET_PROJECT_ID: "{{ $SECRET_PROJECT_ID }}"
+          SECRET_DB_HOST: "{{ $SECRET_DB_HOST }}"
+          SECRET_DB_PASSWORD: "{{ $SECRET_DB_PASSWORD }}"
+          SECRET_SERVICE_ACCOUNT: "{{ $SECRET_SERVICE_ACCOUNT }}"
+    parameters:
+      TABLE_NAME: ""
+      JOB_BACKDATE_DEPEN: "-1"
+      JOB_STARTDATE_DEPEN: ""
+      JOB_ENDDATE_DEPEN: ""
+    schedules:
+      - cron: "40 18 * * *"
+        timezone: "Asia/Bangkok"
+        active: true

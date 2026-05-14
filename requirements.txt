@@ -1,0 +1,22 @@
+# ── Orchestration ─────────────────────────────────────────────────────────────
+prefect>=3.1,<4
+
+# ── DB ────────────────────────────────────────────────────────────────────────
+# CHANGE POINT: was pymysql (MySQL driver). Replaced with pyodbc for MSSQL.
+# ODBC Driver 17 for SQL Server must be installed at the OS level (see Dockerfile).
+sqlalchemy>=2.0,<3.0
+pyodbc>=5.1,<6.0
+
+# ── Data ─────────────────────────────────────────────────────────────────────
+pandas==2.2.*
+numpy==1.26.*
+pyarrow==16.*
+
+# ── GCP ───────────────────────────────────────────────────────────────────────
+gcsfs==2024.6.*
+google-cloud-storage==2.16.*
+google-cloud-secret-manager==2.20.*
+google-auth==2.30.*
+
+python-dotenv==1.0.*
+tenacity==8.3.*
